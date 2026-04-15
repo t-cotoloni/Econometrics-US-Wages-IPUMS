@@ -1,0 +1,713 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Acer\OneDrive\LMAEM\ECONOMETRICS\group_12\log_group_12.txt
+  log type:  text
+ opened on:  30 Dec 2025, 12:26:46
+
+. 
+. ********************************************************************************
+. *                           Econometrics                                      *
+. *                           Group Projects                                    *
+. ********************************************************************************
+. 
+. /* NOTE FOR STUDENTS:
+>    - Fill in: group number and main path.
+>    - Write your code ONLY in the proper section below.
+>    - For final submission, submit also a final log file.
+> */
+. 
+. ********************************************************************************
+. *** Do not touch this
+. ********************************************************************************
+. local REPL = "$REPL_MODE"
+
+. if "`REPL'" == "" local REPL "0"
+
+. 
+. ********************************************************************************
+. *** Insert only your group number and main path
+. ********************************************************************************
+. if "`REPL'" == "0" {
+. 
+.     *** Clear everything
+.     cscript
+-------------------------------------------------------------------------BEGIN 
+. 
+.     *** Insert your group number
+.     global groupn   "12"
+. 
+.     *** Insert your information
+.     if c(username) == "Acer" {  // name of your PC: dis "`c(username)'"  
+.     global main "C:\Users\Acer\Desktop\group_12"                // path where
+>  the main work folder is located   
+.     }
+. 
+.     *** Set current directory
+.     cd "${main}"
+C:\Users\Acer\Desktop\group_12
+.         
+.     *** Load your raw dataset
+.         use "${main}/data_group_$groupn.dta",replace
+.         
+. }
+
+. 
+. *****************************************************************************
+> ***
+. *** Project: write your code
+. *****************************************************************************
+> ***
+. 
+. clear all
+
+. use "C:\Users\Acer\Desktop\group_12\data_group_12.dta" 
+
+. describe
+
+Contains data from C:\Users\Acer\Desktop\group_12\data_group_12.dta
+ Observations:    15,912,393                  
+    Variables:            10                  23 DEC 2025 10:45
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+sex             byte    %8.0g      SEX        sex
+age             byte    %8.0g      AGE        age
+citizen         byte    %8.0g      CITIZEN    citizenship status
+yrimmig         int     %8.0g      YRIMMIG    year of immigration
+speakeng        byte    %8.0g      SPEAKENG   speaks english
+educ            byte    %8.0g      EDUC       educational attainment [general
+                                                version]
+educd           int     %8.0g      EDUCD      educational attainment [detailed
+                                                version]
+wkswork1        byte    %8.0g                 weeks worked last year
+uhrswork        byte    %8.0g      UHRSWORK   usual hours worked per week
+incwage         long    %12.0g     INCWAGE    wage and salary income
+-------------------------------------------------------------------------------
+Sorted by: 
+
+. 
+. *****************************************************************************
+. * RESTRICTIONS ON THE DATA                                                  *
+. *****************************************************************************
+. drop educd
+
+. 
+. * We only want to study immigrants 
+. keep if yrimmig > 0   
+(13,756,605 observations deleted)
+
+. 
+. * We generate a variable that is the number of years lived in the US 
+. gen years_in_us = 2023 - yrimmig
+
+. 
+. * Create categorical variable for yrimmig
+. gen period_cat = .
+(2,155,788 missing values generated)
+
+. replace period_cat = 1 if yrimmig >= 1937 & yrimmig <= 1945  // "The Great De
+> pression" (1929-1945) 
+(5,092 real changes made)
+
+. replace period_cat = 2 if yrimmig >= 1946 & yrimmig <= 1973  // "The Golden A
+> ge" (1945-1973)
+(253,004 real changes made)
+
+. replace period_cat = 3 if yrimmig >= 1974 & yrimmig <= 1994  // "Economic Sta
+> gnation" (1973-1994)
+(638,683 real changes made)
+
+. replace period_cat = 4 if yrimmig >= 1995 & yrimmig <= 2007  // "Globalizatio
+> n" (1994-2007)
+(599,483 real changes made)
+
+. replace period_cat = 5 if yrimmig >= 2008 & yrimmig <= 2019  // "The Great Re
+> cession" (2007-2019)
+(562,313 real changes made)
+
+. replace period_cat = 6 if yrimmig >= 2020                    // "The Pandemic
+> " (2020-2023)
+(97,213 real changes made)
+
+. drop yrimmig
+
+. 
+. * Create categorical variable for speakeng
+. gen speakeng_cat = .
+(2,155,788 missing values generated)
+
+. replace speakeng_cat = 1 if speakeng == 1                  // Does not speak 
+> english
+(141,144 real changes made)
+
+. replace speakeng_cat = 2 if speakeng == 6                  // Speaks not well
+(309,133 real changes made)
+
+. replace speakeng_cat = 3 if speakeng == 4 | speakeng == 5  // Speaks well
+(1,213,541 real changes made)
+
+. replace speakeng_cat = 4 if speakeng == 3                  // Speaks only eng
+> lish
+(474,983 real changes made)
+
+. 
+. * Create dummy for citizen
+. gen citizen_dummy = .
+(2,155,788 missing values generated)
+
+. replace citizen_dummy = 0 if citizen == 3 | citizen == 4  // Not citizen 
+(827,640 real changes made)
+
+. replace citizen_dummy = 1 if citizen == 1 | citizen == 2  // Citizen
+(1,250,979 real changes made)
+
+. drop if !(citizen_dummy == 0 | citizen_dummy == 1)
+(77,169 observations deleted)
+
+. drop citizen
+
+. 
+. * Create categorical variable for educ
+. gen educ_cat = . 
+(2,078,619 missing values generated)
+
+. replace educ_cat = 0 if educ == 00 | educ == 01 | educ == 02  // N/A, Nursey 
+> school to grade 4, Grade 5-8 
+(363,350 real changes made)
+
+. replace educ_cat = 1 if educ == 03 | educ == 04               // Grade 9-10 (
+> 14-16 years)
+(87,072 real changes made)
+
+. replace educ_cat = 2 if educ == 05 |educ == 06                // Grade 11-12 
+> (16-18 years)
+(608,753 real changes made)
+
+. replace educ_cat = 3 if educ == 07 | educ == 08 | educ == 10  // 1-4 Years of
+>  college 
+(703,716 real changes made)
+
+. replace educ_cat = 4 if educ == 11                            // 5+ Years of 
+> college
+(315,728 real changes made)
+
+. drop if educ_cat == 0
+(363,350 observations deleted)
+
+. drop educ
+
+. 
+. * Create dummy for sex
+. gen sex_dummy = .
+(1,715,269 missing values generated)
+
+. replace sex_dummy = 0 if sex == 1  // Male
+(811,845 real changes made)
+
+. replace sex_dummy = 1 if sex == 2  // Female
+(903,424 real changes made)
+
+. drop sex
+
+. 
+. * We only want to keep people from 18 to 65 years old
+. keep if age >= 18 & age <= 65
+(340,872 observations deleted)
+
+. 
+. * We only want real value of income and not zero bc is a log lin model
+. keep if incwage > 0
+(357,872 observations deleted)
+
+. 
+. * We generate the output variable that is the logarithm of income-wage per ho
+> ur
+. gen hours_year = uhrswork * wkswork1  // We generate a variable that is "hour
+> s worked in a year"
+
+. drop wkswork1
+
+. drop uhrswork
+
+. 
+. keep if incwage > 0                   // We onlywanrt real value of income wa
+> ge, not zero because is a log-lin model 
+(0 observations deleted)
+
+. 
+. gen wage_hour = incwage / hours_year  // We generate the variable of the loga
+> rithm of income-wage per hour
+
+. gen ln_wage_hour = log(wage_hour)
+
+. drop incwage
+
+. drop hours_year
+
+. 
+. * Check all the restrictions and count the observations
+. describe
+
+Contains data from C:\Users\Acer\Desktop\group_12\data_group_12.dta
+ Observations:     1,016,525                  
+    Variables:            10                  23 DEC 2025 10:45
+-------------------------------------------------------------------------------
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+-------------------------------------------------------------------------------
+age             byte    %8.0g      AGE        age
+speakeng        byte    %8.0g      SPEAKENG   speaks english
+years_in_us     float   %9.0g                 
+period_cat      float   %9.0g                 
+speakeng_cat    float   %9.0g                 
+citizen_dummy   float   %9.0g                 
+educ_cat        float   %9.0g                 
+sex_dummy       float   %9.0g                 
+wage_hour       float   %9.0g                 
+ln_wage_hour    float   %9.0g                 
+-------------------------------------------------------------------------------
+Sorted by: 
+     Note: Dataset has changed since last saved.
+
+. 
+. *****************************************************************************
+. * DESCRIPTIVE STATISTICS                                                    *
+. *****************************************************************************
+. sum ln_wage_hour years_in_us i.period_cat i.speakeng_cat educ_cat citizen_dum
+> my sex_dummy age
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+ln_wage_hour |  1,016,525    3.275234     .907734  -6.659294   12.44378
+ years_in_us |  1,016,525    23.83092     13.9757          0         70
+             |
+  period_cat |
+          2  |  1,016,525    .0494577    .2168218          0          1
+          3  |  1,016,525    .2930572    .4551647          0          1
+          4  |  1,016,525    .3464037    .4758239          0          1
+-------------+---------------------------------------------------------
+          5  |  1,016,525    .2738309    .4459235          0          1
+          6  |  1,016,525    .0372504     .189375          0          1
+             |
+speakeng_cat |
+          1  |  1,016,525    .0289112    .1675572          0          1
+          2  |  1,016,525    .0973149    .2963862          0          1
+          3  |  1,016,525    .6460235    .4782022          0          1
+-------------+---------------------------------------------------------
+          4  |  1,016,525    .2277504    .4193809          0          1
+             |
+    educ_cat |  1,016,525    2.838518     .799003          1          4
+citizen_du~y |  1,016,525    .6142594      .48677          0          1
+   sex_dummy |  1,016,525    .4793271    .4995727          0          1
+         age |  1,016,525    42.92485    12.22616         18         65
+
+. 
+. reg ln_wage_hour years_in_us i.period_cat i.speakeng_cat educ_cat citizen_dum
+> my sex_dummy age
+
+      Source |       SS           df       MS      Number of obs   = 1,016,525
+-------------+----------------------------------   F(12, 1016512)  =  20069.06
+       Model |  160431.661        12  13369.3051   Prob > F        =    0.0000
+    Residual |  677164.808 1,016,512   .66616509   R-squared       =    0.1915
+-------------+----------------------------------   Adj R-squared   =    0.1915
+       Total |  837596.469 1,016,524  .823981007   Root MSE        =    .81619
+
+------------------------------------------------------------------------------
+ln_wage_hour | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+ years_in_us |   .0023483   .0001997    11.76   0.000     .0019569    .0027397
+             |
+  period_cat |
+          3  |   .0902534   .0054089    16.69   0.000     .0796521    .1008547
+          4  |   .0963699    .007605    12.67   0.000     .0814644    .1112753
+          5  |   .0822332    .009788     8.40   0.000      .063049    .1014173
+          6  |  -.0381584   .0117865    -3.24   0.001    -.0612595   -.0150573
+             |
+speakeng_cat |
+          2  |  -.0096716   .0054477    -1.78   0.076    -.0203489    .0010058
+          3  |   .1810872   .0050388    35.94   0.000     .1712113    .1909631
+          4  |   .2375082   .0053029    44.79   0.000     .2271146    .2479018
+             |
+    educ_cat |   .4032797   .0010798   373.49   0.000     .4011634     .405396
+citizen_du~y |    .033479   .0019762    16.94   0.000     .0296058    .0373523
+   sex_dummy |  -.2446814   .0016258  -150.50   0.000    -.2478679   -.2414948
+         age |   .0098116   .0000809   121.31   0.000     .0096531    .0099702
+       _cons |   1.499041   .0126932   118.10   0.000     1.474163     1.52392
+------------------------------------------------------------------------------
+
+. 
+. *****************************************************************************
+. * CHECK HOMOSKEDASTICITY                                                    *
+. *****************************************************************************
+. * Breusch-Pagan / Cook-Weisberg test
+. estat hettest  // Strong evidence of Heteroskedasticity                      
+>  
+
+Breusch–Pagan/Cook–Weisberg test for heteroskedasticity 
+Assumption: Normal error terms
+Variable: Fitted values of ln_wage_hour
+
+H0: Constant variance
+
+    chi2(1) = 2596.43
+Prob > chi2 =  0.0000
+
+. 
+. *****************************************************************************
+. * CHECK MULTICOLLINEARITY                                                   *
+. *****************************************************************************
+. vif               // Strong multicollinearity with variable "years_in_us" 
+
+    Variable |       VIF       1/VIF  
+-------------+----------------------
+ years_in_us |     11.89    0.084138
+  period_cat |
+          3  |      9.25    0.108119
+          4  |     19.98    0.050047
+          5  |     29.07    0.034400
+          6  |      7.60    0.131538
+speakeng_cat |
+          2  |      3.98    0.251373
+          3  |      8.86    0.112872
+          4  |      7.55    0.132499
+    educ_cat |      1.14    0.880461
+citizen_du~y |      1.41    0.708208
+   sex_dummy |      1.01    0.993389
+         age |      1.49    0.670176
+-------------+----------------------
+    Mean VIF |      8.60
+
+. drop years_in_us  // We only keep "period_cat" to solve multicollinearity pro
+> blem
+
+. 
+. *****************************************************************************
+. * HYPOTESIS TESTING                                                         *
+. *****************************************************************************
+. reg ln_wage_hour i.period_cat i.speakeng_cat citizen_dummy educ_cat sex_dummy
+>  age, robust
+
+Linear regression                               Number of obs     =  1,016,525
+                                                F(11, 1016513)    =   21933.17
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1914
+                                                Root MSE          =     .81624
+
+------------------------------------------------------------------------------
+             |               Robust
+ln_wage_hour | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  period_cat |
+          3  |   .0480862   .0040689    11.82   0.000     .0401112    .0560612
+          4  |   .0219786   .0042565     5.16   0.000      .013636    .0303213
+          5  |  -.0196427   .0045997    -4.27   0.000     -.028658   -.0106275
+          6  |  -.1560335   .0066271   -23.54   0.000    -.1690225   -.1430446
+             |
+speakeng_cat |
+          2  |  -.0092593   .0051482    -1.80   0.072    -.0193496    .0008309
+          3  |   .1830563   .0047993    38.14   0.000     .1736498    .1924627
+          4  |   .2413158   .0051007    47.31   0.000     .2313186     .251313
+             |
+citizen_du~y |    .037159   .0019383    19.17   0.000     .0333599     .040958
+    educ_cat |    .402591   .0010728   375.27   0.000     .4004883    .4046936
+   sex_dummy |  -.2448821   .0016251  -150.69   0.000    -.2480672    -.241697
+         age |   .0100104   .0000822   121.76   0.000     .0098493    .0101715
+       _cons |   1.614498   .0079899   202.07   0.000     1.598838    1.630158
+------------------------------------------------------------------------------
+
+. 
+. * We are testing multiple exclusion restrictions
+. testparm i.period_cat i.speakeng_cat citizen_dummy  // Testing the key variab
+> les
+
+ ( 1)  3.period_cat = 0
+ ( 2)  4.period_cat = 0
+ ( 3)  5.period_cat = 0
+ ( 4)  6.period_cat = 0
+ ( 5)  2.speakeng_cat = 0
+ ( 6)  3.speakeng_cat = 0
+ ( 7)  4.speakeng_cat = 0
+ ( 8)  citizen_dummy = 0
+
+       F(  8,1016513) = 1676.71
+            Prob > F =    0.0000
+
+. 
+. test educ_cat sex_dummy age                         // Testing control variab
+> les
+
+ ( 1)  educ_cat = 0
+ ( 2)  sex_dummy = 0
+ ( 3)  age = 0
+
+       F(  3,1016513) =59744.12
+            Prob > F =    0.0000
+
+. * If the f value > alfa (0.05) we reject the null hypotesis (H_0)
+. 
+. *****************************************************************************
+. * REGRESSION TABLE                                                          *
+. *****************************************************************************
+. ssc install estout
+checking estout consistency and verifying not already installed...
+all files already exist and are up to date.
+
+. reg ln_wage_hour i.period_cat i.speakeng_cat citizen_dummy educ_cat sex_dummy
+>  age, robust
+
+Linear regression                               Number of obs     =  1,016,525
+                                                F(11, 1016513)    =   21933.17
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1914
+                                                Root MSE          =     .81624
+
+------------------------------------------------------------------------------
+             |               Robust
+ln_wage_hour | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  period_cat |
+          3  |   .0480862   .0040689    11.82   0.000     .0401112    .0560612
+          4  |   .0219786   .0042565     5.16   0.000      .013636    .0303213
+          5  |  -.0196427   .0045997    -4.27   0.000     -.028658   -.0106275
+          6  |  -.1560335   .0066271   -23.54   0.000    -.1690225   -.1430446
+             |
+speakeng_cat |
+          2  |  -.0092593   .0051482    -1.80   0.072    -.0193496    .0008309
+          3  |   .1830563   .0047993    38.14   0.000     .1736498    .1924627
+          4  |   .2413158   .0051007    47.31   0.000     .2313186     .251313
+             |
+citizen_du~y |    .037159   .0019383    19.17   0.000     .0333599     .040958
+    educ_cat |    .402591   .0010728   375.27   0.000     .4004883    .4046936
+   sex_dummy |  -.2448821   .0016251  -150.69   0.000    -.2480672    -.241697
+         age |   .0100104   .0000822   121.76   0.000     .0098493    .0101715
+       _cons |   1.614498   .0079899   202.07   0.000     1.598838    1.630158
+------------------------------------------------------------------------------
+
+. est store REGRESSION
+
+. esttab REGRESSION, ///
+>     cells(b(star fmt(3)) se(par fmt(3))) ///  
+>     star(* 0.10 ** 0.05 *** 0.01) ///         
+>     r2 ar2 ///                                
+>     label ///                                 
+>     title("REGRESSION_TAB")
+
+REGRESSION_TAB
+------------------------------------
+                              (1)   
+                     ln_wage_hour   
+                             b/se   
+------------------------------------
+period_cat=2                0.000   
+                              (.)   
+period_cat=3                0.048***
+                          (0.004)   
+period_cat=4                0.022***
+                          (0.004)   
+period_cat=5               -0.020***
+                          (0.005)   
+period_cat=6               -0.156***
+                          (0.007)   
+speakeng_cat=1              0.000   
+                              (.)   
+speakeng_cat=2             -0.009*  
+                          (0.005)   
+speakeng_cat=3              0.183***
+                          (0.005)   
+speakeng_cat=4              0.241***
+                          (0.005)   
+citizen_dummy               0.037***
+                          (0.002)   
+educ_cat                    0.403***
+                          (0.001)   
+sex_dummy                  -0.245***
+                          (0.002)   
+age                         0.010***
+                          (0.000)   
+Constant                    1.614***
+                          (0.008)   
+------------------------------------
+Observations              1016525   
+R-squared                   0.191   
+Adjusted R-squared          0.191   
+------------------------------------
+
+. 
+. *****************************************************************************
+. * Robustness Check                                                          *
+. *****************************************************************************
+. ssc install estout
+checking estout consistency and verifying not already installed...
+all files already exist and are up to date.
+
+. reg ln_wage_hour i.period_cat i.speakeng_cat citizen_dummy educ_cat sex_dummy
+>  age, robust
+
+Linear regression                               Number of obs     =  1,016,525
+                                                F(11, 1016513)    =   21933.17
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1914
+                                                Root MSE          =     .81624
+
+------------------------------------------------------------------------------
+             |               Robust
+ln_wage_hour | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  period_cat |
+          3  |   .0480862   .0040689    11.82   0.000     .0401112    .0560612
+          4  |   .0219786   .0042565     5.16   0.000      .013636    .0303213
+          5  |  -.0196427   .0045997    -4.27   0.000     -.028658   -.0106275
+          6  |  -.1560335   .0066271   -23.54   0.000    -.1690225   -.1430446
+             |
+speakeng_cat |
+          2  |  -.0092593   .0051482    -1.80   0.072    -.0193496    .0008309
+          3  |   .1830563   .0047993    38.14   0.000     .1736498    .1924627
+          4  |   .2413158   .0051007    47.31   0.000     .2313186     .251313
+             |
+citizen_du~y |    .037159   .0019383    19.17   0.000     .0333599     .040958
+    educ_cat |    .402591   .0010728   375.27   0.000     .4004883    .4046936
+   sex_dummy |  -.2448821   .0016251  -150.69   0.000    -.2480672    -.241697
+         age |   .0100104   .0000822   121.76   0.000     .0098493    .0101715
+       _cons |   1.614498   .0079899   202.07   0.000     1.598838    1.630158
+------------------------------------------------------------------------------
+
+. est store ORIGINAL 
+
+. 
+. * Robustness Check 1: Restriction on Sample Size ("age" variable = 25-54 year
+> s)
+. reg ln_wage_hour i.period_cat i.speakeng_cat citizen_dummy educ_cat sex_dummy
+>  age if age >= 25 & age <= 54, robust
+
+Linear regression                               Number of obs     =    722,115
+                                                F(11, 722103)     =   16088.53
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1930
+                                                Root MSE          =     .79304
+
+------------------------------------------------------------------------------
+             |               Robust
+ln_wage_hour | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  period_cat |
+          3  |   .0337326   .0070635     4.78   0.000     .0198884    .0475768
+          4  |   .0333044   .0071456     4.66   0.000     .0192993    .0473095
+          5  |  -.0020067   .0073971    -0.27   0.786    -.0165048    .0124915
+          6  |  -.1482658   .0091444   -16.21   0.000    -.1661885   -.1303432
+             |
+speakeng_cat |
+          2  |  -.0060168   .0060965    -0.99   0.324    -.0179658    .0059321
+          3  |   .1972915   .0056821    34.72   0.000     .1861548    .2084281
+          4  |   .2612266   .0060424    43.23   0.000     .2493836    .2730696
+             |
+citizen_du~y |   .0470178   .0021907    21.46   0.000     .0427242    .0513114
+    educ_cat |    .402002   .0012325   326.16   0.000     .3995863    .4044177
+   sex_dummy |  -.2554138   .0018767  -136.10   0.000     -.259092   -.2517355
+         age |   .0110726   .0001232    89.87   0.000     .0108311    .0113141
+       _cons |   1.607666   .0112059   143.47   0.000     1.585702    1.629629
+------------------------------------------------------------------------------
+
+. est store RESTRICTED_SAMPLE
+
+. 
+. * Robustness Check 2: Dummy Semplification of "speakeng_cat" variable
+. gen speakeng_dummy = .
+(1,016,525 missing values generated)
+
+. replace speakeng_dummy = 0 if speakeng == 1                                  
+>               
+(29,389 real changes made)
+
+. replace speakeng_dummy = 1 if speakeng == 3 | speakeng == 4 | speakeng == 5 |
+>  speakeng == 6
+(987,136 real changes made)
+
+. reg ln_wage_hour i.period_cat speakeng_dummy citizen_dummy educ_cat sex_dummy
+>  age, robust
+
+Linear regression                               Number of obs     =  1,016,525
+                                                F(9, 1016515)     =   25837.15
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1869
+                                                Root MSE          =     .81854
+
+------------------------------------------------------------------------------
+             |               Robust
+ln_wage_hour | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  period_cat |
+          3  |   .0132667   .0040083     3.31   0.001     .0054105    .0211228
+          4  |  -.0281945   .0041486    -6.80   0.000    -.0363256   -.0200634
+          5  |  -.0786983    .004479   -17.57   0.000    -.0874771   -.0699196
+          6  |  -.2183098   .0065613   -33.27   0.000    -.2311698   -.2054499
+             |
+speakeng_d~y |   .1451876   .0047431    30.61   0.000     .1358912     .154484
+citizen_du~y |   .0577653   .0019193    30.10   0.000     .0540036     .061527
+    educ_cat |   .4229521   .0010305   410.42   0.000     .4209324    .4249719
+   sex_dummy |  -.2466042   .0016294  -151.34   0.000    -.2497979   -.2434106
+         age |   .0089168    .000081   110.08   0.000      .008758    .0090755
+       _cons |   1.669218    .007932   210.44   0.000     1.653671    1.684764
+------------------------------------------------------------------------------
+
+. est store DUMMY_SEMPLIFICATION
+
+. 
+. * Robustness Check Table
+. esttab ORIGINAL RESTRICTED_SAMPLE DUMMY_SEMPLIFICATION, ///
+> cells(b(star fmt(3)) se(par fmt(3))) ///
+> star(* 0.10 ** 0.05 *** 0.01) ///
+> r2 ar2 ///
+> label ///
+> compress nogaps ///
+> mtitles("ORIGINAL" "RESTRICTED_SAMPLE" "DUMMY_SEMPLIFICATION")
+
+-------------------------------------------------------
+                       (1)          (2)          (3)   
+                  ORIGINAL    RESTRIC~E    DUMMY_S~N   
+                      b/se         b/se         b/se   
+-------------------------------------------------------
+period_cat=2         0.000        0.000        0.000   
+                       (.)          (.)          (.)   
+period_cat=3         0.048***     0.034***     0.013***
+                   (0.004)      (0.007)      (0.004)   
+period_cat=4         0.022***     0.033***    -0.028***
+                   (0.004)      (0.007)      (0.004)   
+period_cat=5        -0.020***    -0.002       -0.079***
+                   (0.005)      (0.007)      (0.004)   
+period_cat=6        -0.156***    -0.148***    -0.218***
+                   (0.007)      (0.009)      (0.007)   
+speakeng_cat=1       0.000        0.000                
+                       (.)          (.)                
+speakeng_cat=2      -0.009*      -0.006                
+                   (0.005)      (0.006)                
+speakeng_cat=3       0.183***     0.197***             
+                   (0.005)      (0.006)                
+speakeng_cat=4       0.241***     0.261***             
+                   (0.005)      (0.006)                
+citizen_dummy        0.037***     0.047***     0.058***
+                   (0.002)      (0.002)      (0.002)   
+educ_cat             0.403***     0.402***     0.423***
+                   (0.001)      (0.001)      (0.001)   
+sex_dummy           -0.245***    -0.255***    -0.247***
+                   (0.002)      (0.002)      (0.002)   
+age                  0.010***     0.011***     0.009***
+                   (0.000)      (0.000)      (0.000)   
+speakeng_dummy                                 0.145***
+                                             (0.005)   
+Constant             1.614***     1.608***     1.669***
+                   (0.008)      (0.011)      (0.008)   
+-------------------------------------------------------
+Observations       1016525       722115      1016525   
+R-squared            0.191        0.193        0.187   
+Adjusted R-squ~d     0.191        0.193        0.187   
+-------------------------------------------------------
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:\Users\Acer\OneDrive\LMAEM\ECONOMETRICS\group_12\log_group_12.tx
+> t
+  log type:  text
+ closed on:  30 Dec 2025, 12:27:28
+-------------------------------------------------------------------------------
